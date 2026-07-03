@@ -1,0 +1,15 @@
+# Fichiers et bibliothèques
+*.o
+*.out
+*.a
+*.so
+
+# Dossiers de compilation
+build/
+bin/
+
+# Fichiers de configuration
+.vscode/
+
+# exécutable final
+tourelle
