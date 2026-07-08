@@ -40,15 +40,35 @@ int main() {
     cvtColor(frame, frame_gray, COLOR_BGR2GRAY);
     equalizeHist(frame_gray, frame_gray);
     vector<Rect> faces;
-    haarcascade.detectMultiScale(frame_gray, faces, 1.1, 3, 0, Size(100, 100));
+    haarcascade.detectMultiScale(frame_gray, faces, 1.1, 2, 0, Size(70, 70));
+
+    int centre_image_x = frame.cols / 2;
+    line(frame, Point(centre_image_x, 0), Point(centre_image_x, frame.rows), Scalar(255, 0, 0), 2);
+
 
     if (faces.size() == 0) {
         cout << "Aucun visage détecté" << endl;
     }
     else{
-        cout << "Un visage détecté" << endl;
+        // affichage
+        int centre_visage_x = faces[0].x + faces[0].width / 2;
+        int centre_visage_y = faces[0].y + faces[0].height / 2;
         rectangle(frame, faces[0], Scalar(0, 255, 0), 2);
+        drawMarker(frame, Point(centre_visage_x, centre_visage_y), Scalar(0, 0, 255), MARKER_CROSS, 20, 2);
+
+        cout << "Un visage détecté" << endl;
+
+        // différence entre le centre du visage et le centre de l'image
+        int erreur = centre_visage_x - centre_image_x;
+        if (erreur > 40) {
+            cout << "Tourne à droite" << endl;
+        } else if (erreur < -40) {
+            cout << "Tourner à gauche" << endl;
+        } else {
+            cout << "ne tourne pas" << endl;
+        }
     }
+    
 
     string filename = "photo.jpg";
     imwrite(filename, frame);
