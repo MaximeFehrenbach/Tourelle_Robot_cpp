@@ -8,11 +8,15 @@
 
 using namespace std;
 
+const int TICK_MIN = 115; // 0 degre (0.5 ms)
+const int TICK_MAX = 510; // 180 degres (2.5 ms)
+
 // ecrire une valeur dans un registre
 void write_byte(int file, int register_address, int data) {
     unsigned char buffer[2];
     buffer[0] = register_address;
     buffer[1] = data;
+     
     
     write(file, buffer, 2);
 }
@@ -30,12 +34,19 @@ void init_50Hz(int file){
 }
 
 // faire tourner un moteur
-void set_servo(int file, int canal, int off_value) {
+void set_servo_ticks(int file, int canal, int off_value) {
     int servo_address = 0x06 + (4 * canal); // adresse de départ du canal
     write_byte(file, servo_address, 0); // ON_L
     write_byte(file, servo_address + 1, 0); // ON_H
     write_byte(file, servo_address + 2, off_value & 0xFF); // OFF_L
     write_byte(file, servo_address + 3, off_value >> 8); // OFF_H
+}
+
+void set_servo_angle(int file, int canal, int angle) {
+    if (angle < 0) angle = 0;
+    if (angle > 180) angle = 180;
+    int ticks = TICK_MIN + (angle * (TICK_MAX - TICK_MIN) / 180); // [0 ; 180] -> [TICK_MAX ; TICK_MIN]
+    set_servo_ticks(file, canal, ticks);
 }
 
 int main() {
@@ -60,13 +71,26 @@ int main() {
     
     init_50Hz(file);
 
-    set_servo(file, 0, 300); 
+    set_servo_angle(file, 0, 0); 
     this_thread::sleep_for(chrono::seconds(2));
 
-    set_servo(file, 0, 420); 
+    set_servo_angle(file, 1, 120); 
     this_thread::sleep_for(chrono::seconds(2));
 
-    set_servo(file, 0, 0); 
+    set_servo_angle(file, 0, 90); 
+    this_thread::sleep_for(chrono::seconds(2));
+
+    set_servo_angle(file, 0, 180); 
+    this_thread::sleep_for(chrono::seconds(2));
+
+        set_servo_angle(file, 1, 45); 
+    this_thread::sleep_for(chrono::seconds(2));
+
+    set_servo_angle(file, 0, 90); 
+    this_thread::sleep_for(chrono::seconds(2));
+
+    set_servo_angle(file, 0, 0); 
+    this_thread::sleep_for(chrono::seconds(2));
 
     close(file);
     return 0;
